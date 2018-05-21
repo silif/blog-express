@@ -21,3 +21,5 @@ npm run start
 - [showdown](https://github.com/showdownjs/showdown) 把 markdown 转换成 html 文档的库
 - [nodemon](https://github.com/remy/nodemon) 监控 express 代码变动并自动重启服务器
 ### todo
+- eslint
+- test
