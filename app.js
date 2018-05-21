@@ -1,5 +1,6 @@
 var express = require('express');
 var app = express();
+var createError = require('http-errors');
 var path = require('path');
 const pug = require('pug');
 var logger = require('morgan');
@@ -8,6 +9,7 @@ var helmet = require('helmet')
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'pug');
 app.use(cors())
 app.use(helmet())
