@@ -12,10 +12,10 @@ var Article = sequelize.define('article', {
         allowNull: false,
     },
     post: {
-        type:Sequelize.TEXT('long'),
+        type:Sequelize.TEXT,
         allowNull: false
     },
-    tag:{
+    tagname:{
         type:Sequelize.STRING
     },
     createdAt: {

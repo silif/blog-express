@@ -3,8 +3,15 @@ var app = express();
 var path = require('path');
 var routes = require('./routers/index');
 const pug = require('pug');
+var logger = require('morgan');
+var cors = require('cors')
+var helmet = require('helmet')
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.set('view engine', 'pug');
-
+app.use(cors())
+app.use(helmet())
 // app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api', routes);
 
