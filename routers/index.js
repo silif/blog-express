@@ -26,7 +26,7 @@ const diskStorage = multer.diskStorage({
 var uploadToDisk = multer({storage: diskStorage})
 
 const bufferStorage = multer.memoryStorage()
-var uploadToBuffer = multer({storage: bufferStorage})
+var uploadToHtml = multer({storage: bufferStorage})
 
 router.get('/tags', function(req, res, next){
     Tag.findAll().then(function(tags) {
@@ -147,11 +147,11 @@ function userValidate (req, res, next) {
     })
 }
 // 将文章和图片保存到磁盘
-router.post('/articlesToDisk/:username/:password', userValidate, uploadToDisk.fields(fields),function(req, res, next){
+router.post('/articlesToDisk/:username/:password', userValidate, uploadToDisk.fields(fields), function(req, res, next){
     console.log("files",req.files)
     res.json({result:"success"});
 });
-router.post('/articlesToHtml/:username/:password', userValidate, uploadToBuffer.fields(fields), function(req, res, next){
+router.post('/articlesToHtml/:username/:password', userValidate, uploadToHtml.fields(fields), function(req, res, next){
     let bodydataa = req.body;
     let myPost = req.files.post;
     let title = bodydataa.title;
