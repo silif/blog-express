@@ -4,21 +4,30 @@ var router = express.Router();
 var multer = require('multer');
 const Article = require('../models/article');
 const Tag = require('../models/tag');
+const User = require('../models/user');
 // md to html
 var showdown  = require('showdown');
 var converter = new showdown.Converter();
 // 文件上传设置
-const disksStorage = multer.diskStorage({
+function getTime(){
+    const today = new Date();
+    const newTime = today.getFullYear() +'' + (today.getMonth() +1) +'' + today.getDate() + '' + today.getHours()
+    return newTime
+}
+
+const diskStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'articles')
+        cb(null, 'articles/images')
     },
     filename: function (req, file, cb) {
-        cb(null, Date.now() + '-' + file.originalname)
+        cb(null, getTime() + file.originalname)
     }
 })
-var uploadToDisk = multer({ storage: disksStorage })
+var uploadToDisk = multer({storage: diskStorage})
+
 const bufferStorage = multer.memoryStorage()
-var uploadToBuffer = multer({ storage: bufferStorage })
+var uploadToBuffer = multer({storage: bufferStorage})
+
 router.get('/tags', function(req, res, next){
     Tag.findAll().then(function(tags) {
         console.log(tags)
@@ -115,20 +124,42 @@ const fields = [{
     name:"post"
 },{
     name:"tag"
+},{
+    name:"images"
 }]
-// 保存文章到磁盘（可选）
-router.post('/articlesToDisk',uploadToDisk.fields(fields), function(req, res, next){
-    // let formData = req.body;
-    let post = req.files.post
-    console.log('post', post);
+
+function userValidate (req, res, next) {
+    // 向user数据库验证用户名和密码，通过则继续，否则返回wrong
+    const reqbody = req.body;
+    console.log(reqbody)
+    // 这里为何body总是为{}？？？
+    const username = req.params.username,
+    password = req.params.password
+    User.findAll().then(data => {
+        if(data[0]['dataValues']['username'] === username && data[0]['dataValues']['password'] === password){
+            next()
+        }else{
+            res.json({
+                result:'wrong'
+            })
+            return false
+        }
+    })
+}
+// 将文章和图片保存到磁盘
+router.post('/articlesToDisk/:username/:password', userValidate, uploadToDisk.fields(fields),function(req, res, next){
+    console.log(req.files)
     res.json({result:"success"});
 });
-router.post('/articlesToHtml',uploadToBuffer.fields(fields), function(req, res, next){
-    let params = req.body;
+router.post('/articlesToHtml/:username/:password', userValidate, uploadToBuffer.fields(fields), function(req, res, next){
+    let bodydataa = req.body;
     let myPost = req.files.post;
-    if(!myPost){
+    let title = bodydataa.title;
+    let tagname = bodydataa.tagname;
+    
+    if(!myPost || !tagname || !title){
         res.json({
-            result:"fail"
+            result:"lostparams"
         })
         return
     }
@@ -136,17 +167,16 @@ router.post('/articlesToHtml',uploadToBuffer.fields(fields), function(req, res, 
     let postString = postBuffer.toString('utf8')
     let postHtml = converter.makeHtml(postString);
     const article = {
-        title:params.title,
-        tagname:params.tagname.toUpperCase(),
+        title:title,
+        tagname:tagname,
         post:postHtml
     }
     const tag = {
-        tagname:params.tagname.toUpperCase()
+        tagname:tagname
     }
     const insertArticlePromise =  Article.create(article)
     const insertTagPromise =  Tag.findOrCreate({where: tag})
     Promise.all([insertArticlePromise,insertTagPromise]).then(function(data){
-        console.log(tag)
         res.json({
             result:"success",
             data:data
