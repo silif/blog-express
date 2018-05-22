@@ -149,7 +149,7 @@ function userValidate (req, res, next) {
 // 将文章和图片保存到磁盘
 router.post('/articlesToDisk/:username/:password', userValidate, uploadToDisk.fields(fields), function(req, res, next){
     console.log("files",req.files)
-    res.json({result:"success"});
+    res.json({result:"success",time:getTime()});
 });
 router.post('/articlesToHtml/:username/:password', userValidate, uploadToHtml.fields(fields), function(req, res, next){
     let bodydataa = req.body;
@@ -188,4 +188,15 @@ router.post('/articlesToHtml/:username/:password', userValidate, uploadToHtml.fi
         })
     })
 });
+
+router.post('/test',function(req, res, next){
+    console.log(req)
+    console.log('1', req.body);
+    next()
+},function(req, res, next) {
+    console.log('2', req.body);
+    res.json({
+        code:200
+    })
+})
 module.exports = router
