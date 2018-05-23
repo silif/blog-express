@@ -102,7 +102,7 @@ router.get('/postsByTagname/:tagname', function(req, res, next){
 router.get('/posts/:postId', function(req, res, next){
     const id = req.params.postId
     Article.findAll({
-        attributes: ['title','tagname','post','createdAt','updatedAt'],
+        attributes: ['id', 'title','tagname','post','createdAt','updatedAt'],
         where: {
             id: id
         }
@@ -136,7 +136,7 @@ function userValidate (req, res, next) {
     const username = req.params.username,
     password = req.params.password
     User.findAll().then(data => {
-        if(data[0]['dataValues']['username'] === username && data[0]['dataValues']['password'] === password){
+        if(data[0]&&data[0]['dataValues']&&data[0]['dataValues']['username'] === username && data[0]['dataValues']['password'] === password){
             next()
         }else{
             res.json({
@@ -153,6 +153,13 @@ router.post('/articlesToDisk/:username/:password', userValidate, uploadToDisk.fi
 });
 router.post('/articlesToHtml/:username/:password', userValidate, uploadToHtml.fields(fields), function(req, res, next){
     let bodydataa = req.body;
+    console.log('files', req.files)
+    if(!req.files) {
+        res.json({
+            result:'params miss'
+        })
+        return 
+    }
     let myPost = req.files.post;
     let title = bodydataa.title;
     let tagname = bodydataa.tagname;
